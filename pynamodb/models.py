@@ -1373,3 +1373,15 @@ class Model(AttributeContainer):
         if range_key is not None:
             range_key = cls._range_key_attribute().serialize(range_key)
         return hash_key, range_key
+    
+    # Allows for clean iterations to dicts
+    def __iter__(self):
+        for name, attr in self.get_attributes().items():
+            if isinstance(attr, ListAttribute):
+                try:
+                    yield name, [i.as_dict() for i in getattr(self, name)]
+                except AttributeError:
+                    yield name, [i for i in getattr(self, name)]
+            else:
+                yield name, attr.serialize(getattr(self, name))
+
